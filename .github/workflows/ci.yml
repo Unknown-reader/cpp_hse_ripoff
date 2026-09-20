@@ -1,0 +1,137 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  BUILD_DIR: build
+
+jobs:
+  build-and-test:
+    name: Сборка и тесты (${{ matrix.compiler }}, ${{ matrix.build_type }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+        build_type: [Debug, Release]
+    env:
+      CMAKE_FLAGS: -DWERROR=ON
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установка зависимостей
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake clang
+
+      - name: Настройка ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.compiler }}-${{ matrix.build_type }}
+
+      - name: Выбор компилятора
+        run: |
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            echo "CC=gcc"  >> "$GITHUB_ENV"
+            echo "CXX=g++" >> "$GITHUB_ENV"
+          else
+            echo "CC=clang"  >> "$GITHUB_ENV"
+            echo "CXX=clang++" >> "$GITHUB_ENV"
+          fi
+
+      - name: Сборка
+        run: make build BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Тесты
+        run: make test
+
+  sanitizers:
+    name: Санитайзеры (ASan + UBSan)
+    runs-on: ubuntu-latest
+    env:
+      CC: clang
+      CXX: clang++
+      CMAKE_FLAGS: -DWERROR=ON
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установка зависимостей
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake clang
+
+      - name: Сборка и тесты под санитайзерами
+        run: make sanitize
+
+  quality:
+    name: Качество кода
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установка зависимостей
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake clang clang-format clang-tidy cppcheck
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Установка cpplint
+        run: pip install cpplint
+
+      - name: Конфигурация
+        run: make configure
+
+      - name: Проверка форматирования (clang-format)
+        run: make format-check
+
+      - name: Стиль Google (cpplint)
+        run: make lint-style
+
+      - name: Статический анализ (clang-tidy, cppcheck)
+        run: make lint-tidy lint-cppcheck
+
+  coverage:
+    name: Покрытие
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установка зависимостей
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Установка gcovr
+        run: pip install gcovr
+
+      - name: Сбор покрытия
+        run: make coverage
+
+      - name: Сводка покрытия
+        run: cat coverage/coverage.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Загрузка отчёта покрытия
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14

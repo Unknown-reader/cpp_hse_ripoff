@@ -1,0 +1,11 @@
+BasedOnStyle: Google
+Language: Cpp
+Standard: c++20
+DerivePointerAlignment: false
+PointerAlignment: Left
+IncludeBlocks: Regroup
+SortIncludes: CaseSensitive
+ColumnLimit: 80
+IndentWidth: 2
+AccessModifierOffset: -1
+AllowShortFunctionsOnASingleLine: Empty
