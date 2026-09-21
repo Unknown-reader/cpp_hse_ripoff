@@ -74,8 +74,7 @@ make test
 | `make new HW=NN` | Создать каркас новой работы |
 | `make clean` | Удалить каталоги сборки и отчёт покрытия |
 
-Полезные переменные: `BUILD_TYPE` (`Debug`/`Release`), `JOBS`, `BUILD_DIR`,
-`CMAKE_FLAGS`.
+Полезные переменные: `JOBS`, `BUILD_DIR`, `CMAKE_FLAGS`.
 
 По умолчанию сборка идёт в каталог `build/` рядом с исходниками (он исключён
 через `.gitignore`).
@@ -113,7 +112,7 @@ make test
 **`.github/workflows/ci.yml`** — на каждый `push` и `pull_request` в `main`,
 а также вручную (`workflow_dispatch`):
 
-- `build-and-test` — clang × `{Debug, Release}` с `-Werror`;
+- `build-and-test` — сборка и тесты с `-Werror`;
 - `sanitizers` — сборка и тесты под AddressSanitizer и UBSan;
 - `quality` — `clang-format --dry-run --Werror`, cpplint, clang-tidy, cppcheck;
 - `coverage` — покрытие через gcovr + llvm-cov, сводка в Summary и артефакт
