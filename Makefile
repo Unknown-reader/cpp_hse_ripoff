@@ -15,7 +15,6 @@ LLVM_COV ?= $(shell command -v llvm-cov || command -v llvm-cov-18 \
 	|| command -v llvm-cov-19 || echo llvm-cov)
 JOBS ?= $(shell nproc 2>/dev/null || echo 2)
 
-BUILD_TYPE ?= Debug
 BUILD_DIR ?= build
 BUILD_ASAN_DIR ?= build-asan
 BUILD_COV_DIR ?= build-cov
@@ -68,11 +67,11 @@ help:
 	@echo "  make new       HW=NN      Создать каркас новой работы"
 	@echo "  make clean                Удалить каталоги сборки и отчёт покрытия"
 	@echo ""
-	@echo "Переменные: BUILD_TYPE=$(BUILD_TYPE) JOBS=$(JOBS)"
+	@echo "Переменные: JOBS=$(JOBS)"
 	@echo "Обнаруженные работы: $(if $(HW_DIRS),$(HW_DIRS),нет)"
 
 configure:
-	@$(CMAKE) -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
+	@$(CMAKE) -S . -B $(BUILD_DIR) \
 		-DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) $(CMAKE_FLAGS)
 
 build: configure
@@ -82,7 +81,7 @@ test: build
 	@$(CTEST) --test-dir $(BUILD_DIR) $(HW_FILTER) --output-on-failure
 
 sanitize:
-	@$(CMAKE) -S . -B $(BUILD_ASAN_DIR) -DCMAKE_BUILD_TYPE=Debug \
+	@$(CMAKE) -S . -B $(BUILD_ASAN_DIR) \
 		-DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) \
 		-DENABLE_SANITIZERS=ON $(CMAKE_FLAGS)
 	@$(CMAKE) --build $(BUILD_ASAN_DIR) $(if $(HW),--target $(HW_TARGETS)) \
@@ -91,7 +90,7 @@ sanitize:
 		$(CTEST) --test-dir $(BUILD_ASAN_DIR) $(HW_FILTER) --output-on-failure
 
 coverage:
-	@$(CMAKE) -S . -B $(BUILD_COV_DIR) -DCMAKE_BUILD_TYPE=Debug \
+	@$(CMAKE) -S . -B $(BUILD_COV_DIR) \
 		-DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) \
 		-DENABLE_COVERAGE=ON $(CMAKE_FLAGS)
 	@$(CMAKE) --build $(BUILD_COV_DIR) --parallel $(JOBS)
