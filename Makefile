@@ -2,8 +2,12 @@ SHELL := /bin/bash
 
 CMAKE ?= cmake
 CTEST ?= ctest
-CC ?= clang
-CXX ?= clang++
+ifeq ($(origin CC),default)
+override CC := clang
+endif
+ifeq ($(origin CXX),default)
+override CXX := clang++
+endif
 CLANG_FORMAT ?= clang-format
 CPPLINT ?= cpplint
 GCOVR ?= gcovr
