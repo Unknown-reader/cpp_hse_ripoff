@@ -98,11 +98,13 @@ sanitize:
 
 coverage:
 	@$(CMAKE) -S . -B $(BUILD_COV_DIR) -DCMAKE_BUILD_TYPE=Debug \
+		-DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) \
 		-DENABLE_COVERAGE=ON $(CMAKE_FLAGS)
 	@$(CMAKE) --build $(BUILD_COV_DIR) --parallel $(JOBS)
 	@$(CTEST) --test-dir $(BUILD_COV_DIR) $(HW_FILTER) --output-on-failure
 	@mkdir -p $(COVERAGE_DIR)
 	@$(GCOVR) --root . --gcov-object-directory $(BUILD_COV_DIR) \
+		--gcov-executable "$(LLVM_COV) gcov" \
 		$(if $(HW),--filter '$(HW)/.*',) \
 		--exclude '(^|/)build[^/]*/.*' \
 		--exclude '.*/(_deps|tests|app|third_party)/.*' \
