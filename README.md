@@ -8,16 +8,16 @@ Makefile поверх CMake, тесты на GoogleTest, стиль — Google C
 ## Требования
 
 - CMake ≥ 3.20
-- Компилятор с поддержкой C++20: `g++` ≥ 10 или `clang++`
+- Компилятор `clang++` с поддержкой C++20 (≥ 16)
 - `make`
 - Инструменты качества (нужны только для `make lint` и `make format`):
   `clang-format`, `clang-tidy`, `run-clang-tidy`, `cppcheck`, `cpplint`
-- `gcovr` для `make coverage`
+- `gcovr` и `llvm-cov` для `make coverage`
 
 Установка (Ubuntu/WSL):
 
 ```bash
-sudo apt-get install -y cmake g++ clang clang-format clang-tidy cppcheck
+sudo apt-get install -y cmake clang llvm clang-format clang-tidy cppcheck
 pip install --user --break-system-packages cpplint gcovr
 ```
 
@@ -117,10 +117,11 @@ make test
 **`.github/workflows/ci.yml`** — на каждый `push` и `pull_request` в `main`,
 а также вручную (`workflow_dispatch`):
 
-- `build-and-test` — матрица `{gcc, clang} × {Debug, Release}` с `-Werror`;
+- `build-and-test` — clang × `{Debug, Release}` с `-Werror`;
 - `sanitizers` — сборка и тесты под AddressSanitizer и UBSan;
 - `quality` — `clang-format --dry-run --Werror`, cpplint, clang-tidy, cppcheck;
-- `coverage` — покрытие через gcovr, сводка в Summary и артефакт `coverage/`.
+- `coverage` — покрытие через gcovr + llvm-cov, сводка в Summary и артефакт
+  `coverage/`.
 
 **`.github/workflows/release.yml`** — по тегу вида `v1.0.0`: Release-сборка,
 бинарники приложений публикуются в GitHub Releases.
