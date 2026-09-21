@@ -10,11 +10,6 @@ target_include_directories(
 )
 target_link_libraries(${hw_target} PUBLIC project_options)
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/app/main.cpp")
-  add_executable(${hw_target}_app "${CMAKE_CURRENT_SOURCE_DIR}/app/main.cpp")
-  target_link_libraries(${hw_target}_app PRIVATE ${hw_target})
-endif()
-
 file(GLOB hw_tests CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp")
 if(hw_tests)
   add_executable(${hw_target}_tests ${hw_tests})

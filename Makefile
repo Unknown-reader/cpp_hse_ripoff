@@ -23,7 +23,6 @@ COVERAGE_DIR ?= coverage
 CMAKE_FLAGS ?=
 
 HW ?=
-ARGS ?=
 
 empty :=
 space := $(empty) $(empty)
@@ -32,9 +31,8 @@ HW_DIRS := $(sort $(notdir $(wildcard [0-9][0-9])))
 HW_DIRS_REGEX := $(subst $(space),|,$(HW_DIRS))
 
 HW_LIB := hw$(HW)
-HW_APP := $(if $(wildcard $(HW)/app/main.cpp),hw$(HW)_app)
 HW_TESTS := $(if $(wildcard $(HW)/tests),hw$(HW)_tests)
-HW_TARGETS := $(HW_LIB) $(HW_APP) $(HW_TESTS)
+HW_TARGETS := $(HW_LIB) $(HW_TESTS)
 
 HW_FILTER := $(if $(HW),-L hw$(HW))
 TIDY_FILES := $(if $(HW),$(CURDIR)/$(HW)/.*,$(CURDIR)/($(HW_DIRS_REGEX))/.*)
@@ -52,7 +50,7 @@ FORMAT_SOURCES := $(shell find . -type d \
 
 .DEFAULT_GOAL := help
 
-.PHONY: help configure build test run sanitize coverage lint lint-style \
+.PHONY: help configure build test sanitize coverage lint lint-style \
 	lint-tidy lint-cppcheck format format-check new clean
 
 help:
@@ -61,7 +59,6 @@ help:
 	@echo "  make configure            Настроить CMake (BUILD_DIR=$(BUILD_DIR))"
 	@echo "  make build   [HW=NN]      Собрать всё или только работу NN"
 	@echo "  make test    [HW=NN]      Собрать и прогнать тесты"
-	@echo "  make run      HW=NN       Собрать и запустить приложение работы NN"
 	@echo "  make sanitize [HW=NN]     Собрать и прогнать тесты под ASan/UBSan"
 	@echo "  make coverage [HW=NN]     Собрать, прогнать тесты и собрать покрытие"
 	@echo "  make lint     [HW=NN]     cpplint + clang-tidy + cppcheck"
@@ -71,7 +68,7 @@ help:
 	@echo "  make new       HW=NN      Создать каркас новой работы"
 	@echo "  make clean                Удалить каталоги сборки и отчёт покрытия"
 	@echo ""
-	@echo "Переменные: BUILD_TYPE=$(BUILD_TYPE) JOBS=$(JOBS) ARGS='...'"
+	@echo "Переменные: BUILD_TYPE=$(BUILD_TYPE) JOBS=$(JOBS)"
 	@echo "Обнаруженные работы: $(if $(HW_DIRS),$(HW_DIRS),нет)"
 
 configure:
@@ -83,13 +80,6 @@ build: configure
 
 test: build
 	@$(CTEST) --test-dir $(BUILD_DIR) $(HW_FILTER) --output-on-failure
-
-run: build
-	@test -n "$(HW)" || { echo "Укажите работу: make run HW=01"; exit 1; }
-	@test -x "$(BUILD_DIR)/$(HW)/hw$(HW)_app" || { \
-		echo "Для работы $(HW) нет приложения ($(BUILD_DIR)/$(HW)/hw$(HW)_app)."; \
-		exit 1; }
-	@$(BUILD_DIR)/$(HW)/hw$(HW)_app $(ARGS)
 
 sanitize:
 	@$(CMAKE) -S . -B $(BUILD_ASAN_DIR) -DCMAKE_BUILD_TYPE=Debug \
@@ -111,7 +101,7 @@ coverage:
 		--gcov-executable "$(LLVM_COV) gcov" \
 		$(if $(HW),--filter '$(HW)/.*',) \
 		--exclude '(^|/)build[^/]*/.*' \
-		--exclude '.*/(_deps|tests|app|third_party)/.*' \
+		--exclude '.*/(_deps|tests|third_party)/.*' \
 		--exclude-unreachable-branches --exclude-throw-branches \
 		--cobertura-pretty --cobertura $(COVERAGE_DIR)/coverage.xml \
 		--html-details $(COVERAGE_DIR)/index.html \
