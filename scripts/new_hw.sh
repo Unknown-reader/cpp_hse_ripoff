@@ -53,7 +53,6 @@ done < <(find "${destination}" -type f -print0)
 echo "Создана работа '${number}':"
 echo "  ${number}/include/hw${number}/solution.hpp"
 echo "  ${number}/src/solution.cpp"
-echo "  ${number}/app/main.cpp"
 echo "  ${number}/tests/test_solution.cpp"
 echo
 echo "Дальше:"

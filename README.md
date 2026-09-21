@@ -37,9 +37,8 @@ GoogleTest не нужно ставить руками — CMake скачает 
 │   ├── CMakeLists.txt
 │   ├── include/hw01/solution.hpp
 │   ├── src/solution.cpp
-│   ├── app/main.cpp
 │   └── tests/test_solution.cpp
-└── .github/workflows/      # ci.yml, release.yml, pages.yml
+└── .github/workflows/      # ci.yml, pages.yml
 ```
 
 ## Быстрый старт
@@ -50,7 +49,6 @@ make new HW=02            # создать каркас работы 02
 # реализовать 02/src/... и тесты 02/tests/...
 make build HW=02          # собрать только работу 02
 make test  HW=02          # прогнать только её тесты
-make run   HW=02          # запустить демо-приложение работы 02
 ```
 
 Собрать и протестировать сразу все работы:
@@ -67,7 +65,6 @@ make test
 | `make configure` | Настроить CMake (скачивает GoogleTest) |
 | `make build [HW=NN]` | Собрать всё или только работу `NN` |
 | `make test [HW=NN]` | Собрать и прогнать тесты |
-| `make run HW=NN [ARGS='...']` | Запустить приложение работы `NN` |
 | `make sanitize [HW=NN]` | Сборка и тесты под ASan/UBSan |
 | `make coverage [HW=NN]` | Отчёт о покрытии (`coverage/index.html`) |
 | `make lint [HW=NN]` | cpplint + clang-tidy + cppcheck |
@@ -78,15 +75,14 @@ make test
 | `make clean` | Удалить каталоги сборки и отчёт покрытия |
 
 Полезные переменные: `BUILD_TYPE` (`Debug`/`Release`), `JOBS`, `BUILD_DIR`,
-`ARGS`, `CMAKE_FLAGS`.
+`CMAKE_FLAGS`.
 
 По умолчанию сборка идёт в каталог `build/` рядом с исходниками (он исключён
 через `.gitignore`).
 
 ## Как добавить работу
 
-1. `make new HW=07` — создастся `07/` с заголовком, исходником, приложением и
-   тестом.
+1. `make new HW=07` — создастся `07/` с заголовком, исходником и тестом.
 2. Реализуйте задание в `07/src/`, объявления — в
    `07/include/hw07/solution.hpp`.
 3. Добавьте тесты в `07/tests/`.
@@ -122,9 +118,6 @@ make test
 - `quality` — `clang-format --dry-run --Werror`, cpplint, clang-tidy, cppcheck;
 - `coverage` — покрытие через gcovr + llvm-cov, сводка в Summary и артефакт
   `coverage/`.
-
-**`.github/workflows/release.yml`** — по тегу вида `v1.0.0`: Release-сборка,
-бинарники приложений публикуются в GitHub Releases.
 
 **`.github/workflows/pages.yml`** — по push в `main`: HTML-отчёт о покрытии
 публикуется на GitHub Pages.
