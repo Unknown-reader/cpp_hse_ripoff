@@ -105,7 +105,7 @@ jobs:
       - name: Установка зависимостей
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake g++
+          sudo apt-get install -y cmake clang llvm
 
       - uses: actions/setup-python@v5
         with:
@@ -115,7 +115,7 @@ jobs:
         run: pip install gcovr
 
       - name: Сбор покрытия
-        run: make coverage
+        run: make coverage LLVM_COV=llvm-cov-18
 
       - name: Сводка покрытия
         run: cat coverage/coverage.txt >> "$GITHUB_STEP_SUMMARY"
