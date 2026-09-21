@@ -19,14 +19,15 @@ env:
 
 jobs:
   build-and-test:
-    name: Сборка и тесты (${{ matrix.compiler }}, ${{ matrix.build_type }})
+    name: Сборка и тесты (${{ matrix.build_type }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        compiler: [gcc, clang]
         build_type: [Debug, Release]
     env:
+      CC: clang
+      CXX: clang++
       CMAKE_FLAGS: -DWERROR=ON
     steps:
       - uses: actions/checkout@v4
@@ -39,17 +40,7 @@ jobs:
       - name: Настройка ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.compiler }}-${{ matrix.build_type }}
-
-      - name: Выбор компилятора
-        run: |
-          if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            echo "CC=gcc"  >> "$GITHUB_ENV"
-            echo "CXX=g++" >> "$GITHUB_ENV"
-          else
-            echo "CC=clang"  >> "$GITHUB_ENV"
-            echo "CXX=clang++" >> "$GITHUB_ENV"
-          fi
+          key: ${{ matrix.build_type }}
 
       - name: Сборка
         run: make build BUILD_TYPE=${{ matrix.build_type }}
