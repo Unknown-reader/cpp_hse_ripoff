@@ -2,9 +2,13 @@ SHELL := /bin/bash
 
 CMAKE ?= cmake
 CTEST ?= ctest
+CC ?= clang
+CXX ?= clang++
 CLANG_FORMAT ?= clang-format
 CPPLINT ?= cpplint
 GCOVR ?= gcovr
+LLVM_COV ?= $(shell command -v llvm-cov || command -v llvm-cov-18 \
+	|| command -v llvm-cov-19 || echo llvm-cov)
 JOBS ?= $(shell nproc 2>/dev/null || echo 2)
 
 BUILD_TYPE ?= Debug
@@ -67,7 +71,8 @@ help:
 	@echo "Обнаруженные работы: $(if $(HW_DIRS),$(HW_DIRS),нет)"
 
 configure:
-	@$(CMAKE) -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(CMAKE_FLAGS)
+	@$(CMAKE) -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
+		-DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) $(CMAKE_FLAGS)
 
 build: configure
 	@$(CMAKE) --build $(BUILD_DIR) $(if $(HW),--target $(HW_TARGETS)) --parallel $(JOBS)
@@ -84,6 +89,7 @@ run: build
 
 sanitize:
 	@$(CMAKE) -S . -B $(BUILD_ASAN_DIR) -DCMAKE_BUILD_TYPE=Debug \
+		-DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) \
 		-DENABLE_SANITIZERS=ON $(CMAKE_FLAGS)
 	@$(CMAKE) --build $(BUILD_ASAN_DIR) $(if $(HW),--target $(HW_TARGETS)) \
 		--parallel $(JOBS)
