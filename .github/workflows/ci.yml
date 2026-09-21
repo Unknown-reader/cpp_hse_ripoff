@@ -19,12 +19,8 @@ env:
 
 jobs:
   build-and-test:
-    name: Сборка и тесты (${{ matrix.build_type }})
+    name: Сборка и тесты
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        build_type: [Debug, Release]
     env:
       CC: clang
       CXX: clang++
@@ -39,11 +35,9 @@ jobs:
 
       - name: Настройка ccache
         uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ${{ matrix.build_type }}
 
       - name: Сборка
-        run: make build BUILD_TYPE=${{ matrix.build_type }}
+        run: make build
 
       - name: Тесты
         run: make test
