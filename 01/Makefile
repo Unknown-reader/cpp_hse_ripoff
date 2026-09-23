@@ -47,7 +47,7 @@ endif
 
 .DEFAULT_GOAL := build
 
-.PHONY: build test sanitize coverage clean lint-style lint-tidy lint-cppcheck help
+.PHONY: build test sanitize coverage clean lint help
 
 build: $(ALL_TARGETS)
 
@@ -88,16 +88,12 @@ coverage:
 		--txt $(COVERAGE_DIR)/coverage.txt
 	@echo "Покрытие $(NAME): $(COVERAGE_DIR)/index.html"
 
-lint-style:
+lint:
 	@cpplint --recursive --quiet --filter=-legal/copyright --root=include .
-
-lint-tidy:
 	@for f in $(LIB_SRCS) $(TEST_SRCS); do \
 		echo "clang-tidy $$f"; \
 		clang-tidy -quiet "$$f" -- -std=c++20 -Iinclude || exit 1; \
 	done
-
-lint-cppcheck:
 	@cppcheck --enable=all --inconclusive --error-exitcode=1 --std=c++20 \
 		--suppress=missingIncludeSystem --suppress=unusedFunction \
 		--suppress=unmatchedSuppression -Iinclude src include
@@ -108,4 +104,4 @@ clean:
 
 help:
 	@echo "Работа $(NAME):"
-	@echo "  make build|test|sanitize|coverage|lint-style|lint-tidy|lint-cppcheck|clean"
+	@echo "  make build|test|sanitize|coverage|lint|clean"

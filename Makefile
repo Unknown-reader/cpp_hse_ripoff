@@ -23,7 +23,7 @@ FORMAT_SOURCES := $(shell find . -type d \
 
 .DEFAULT_GOAL := help
 
-.PHONY: help build test sanitize coverage lint lint-style lint-tidy \
+.PHONY: help build test sanitize coverage lint \
 	lint-cppcheck format format-check clean
 
 help:
@@ -34,14 +34,13 @@ help:
 	@echo "  make sanitize [HW=NN]     Тесты под ASan/UBSan"
 	@echo "  make coverage [HW=NN]     Тесты + отчёт о покрытии"
 	@echo "  make lint     [HW=NN]     cpplint + clang-tidy + cppcheck"
-	@echo "  make lint-style [HW=NN]   Только cpplint (Google C++ Style)"
 	@echo "  make format              Отформатировать clang-format"
 	@echo "  make format-check        Проверить форматирование (как в CI)"
 	@echo "  make clean                Удалить каталоги сборки и отчёт покрытия"
 	@echo ""
 	@echo "Работы: $(HWS)"
 
-build test sanitize lint-style lint-tidy lint-cppcheck:
+build test sanitize:
 	@for d in $(DIRS); do \
 		$(MAKE) --no-print-directory -C $$d $@ || exit 1; \
 	done
@@ -62,7 +61,11 @@ coverage:
 	@cat $(COVERAGE_DIR)/coverage.txt
 	@echo "Сводное покрытие: $(COVERAGE_DIR)/index.html"
 
-lint: lint-style lint-tidy lint-cppcheck
+lint:
+	@for d in $(DIRS); do \
+		$(MAKE) --no-print-directory -C $$d lint || exit 1; \
+	done
+	@echo "Линт завершён."
 
 format:
 	@$(CLANG_FORMAT) -i $(FORMAT_SOURCES)

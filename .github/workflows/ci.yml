@@ -84,11 +84,8 @@ jobs:
       - name: Проверка форматирования (clang-format)
         run: make format-check
 
-      - name: Стиль Google (cpplint)
-        run: make lint-style
-
-      - name: Статический анализ (clang-tidy, cppcheck)
-        run: make lint-tidy lint-cppcheck
+      - name: Статический анализ (cpplint, clang-tidy, cppcheck)
+        run: make lint
 
   coverage:
     name: Покрытие

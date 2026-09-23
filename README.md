@@ -63,7 +63,6 @@ make test
 | `make sanitize [HW=NN]` | Сборка и тесты под ASan/UBSan |
 | `make coverage [HW=NN]` | Отчёт о покрытии (`coverage/index.html`) |
 | `make lint [HW=NN]` | cpplint + clang-tidy + cppcheck |
-| `make lint-style [HW=NN]` | Только cpplint (Google C++ Style) |
 | `make format` | Автоформатирование clang-format по всему репозиторию |
 | `make format-check` | Проверка форматирования (как в CI) |
 | `make clean` | Удалить каталоги сборки и отчёты покрытия |
