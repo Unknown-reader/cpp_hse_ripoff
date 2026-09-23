@@ -19,11 +19,17 @@ env:
 
 jobs:
   build-and-test:
-    name: Сборка и тесты
+    name: Сборка и тесты (${{ matrix.compiler }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { compiler: gcc, cc: gcc, cxx: g++ }
+          - { compiler: clang, cc: clang, cxx: clang++ }
     env:
-      CC: clang
-      CXX: clang++
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
       CMAKE_FLAGS: -DWERROR=ON
     steps:
       - uses: actions/checkout@v4
@@ -31,10 +37,12 @@ jobs:
       - name: Установка зависимостей
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake clang
+          sudo apt-get install -y cmake g++ clang
 
       - name: Настройка ccache
         uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.compiler }}
 
       - name: Сборка
         run: make build
@@ -46,8 +54,8 @@ jobs:
     name: Санитайзеры (ASan + UBSan)
     runs-on: ubuntu-latest
     env:
-      CC: clang
-      CXX: clang++
+      CC: gcc
+      CXX: g++
       CMAKE_FLAGS: -DWERROR=ON
     steps:
       - uses: actions/checkout@v4
@@ -55,7 +63,7 @@ jobs:
       - name: Установка зависимостей
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake clang
+          sudo apt-get install -y cmake g++
 
       - name: Сборка и тесты под санитайзерами
         run: make sanitize
@@ -63,6 +71,9 @@ jobs:
   quality:
     name: Качество кода
     runs-on: ubuntu-latest
+    env:
+      CC: clang
+      CXX: clang++
     steps:
       - uses: actions/checkout@v4
 
@@ -99,7 +110,7 @@ jobs:
       - name: Установка зависимостей
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake clang llvm
+          sudo apt-get install -y cmake g++
 
       - uses: actions/setup-python@v5
         with:
@@ -109,7 +120,7 @@ jobs:
         run: pip install gcovr
 
       - name: Сбор покрытия
-        run: make coverage LLVM_COV=llvm-cov-18
+        run: make coverage
 
       - name: Сводка покрытия
         run: cat coverage/coverage.txt >> "$GITHUB_STEP_SUMMARY"
