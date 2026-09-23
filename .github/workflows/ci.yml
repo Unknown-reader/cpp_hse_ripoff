@@ -14,9 +14,6 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  BUILD_DIR: build
-
 jobs:
   build-and-test:
     name: Сборка и тесты (${{ matrix.compiler }})
@@ -30,19 +27,14 @@ jobs:
     env:
       CC: ${{ matrix.cc }}
       CXX: ${{ matrix.cxx }}
-      CMAKE_FLAGS: -DWERROR=ON
+      WERROR: "1"
     steps:
       - uses: actions/checkout@v4
 
       - name: Установка зависимостей
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake g++ clang
-
-      - name: Настройка ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ${{ matrix.compiler }}
+          sudo apt-get install -y libgtest-dev g++ clang make
 
       - name: Сборка
         run: make build
@@ -56,14 +48,14 @@ jobs:
     env:
       CC: gcc
       CXX: g++
-      CMAKE_FLAGS: -DWERROR=ON
+      WERROR: "1"
     steps:
       - uses: actions/checkout@v4
 
       - name: Установка зависимостей
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake g++
+          sudo apt-get install -y libgtest-dev g++ make
 
       - name: Сборка и тесты под санитайзерами
         run: make sanitize
@@ -80,7 +72,7 @@ jobs:
       - name: Установка зависимостей
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake clang clang-format clang-tidy cppcheck
+          sudo apt-get install -y libgtest-dev clang clang-format clang-tidy cppcheck make
 
       - uses: actions/setup-python@v5
         with:
@@ -88,9 +80,6 @@ jobs:
 
       - name: Установка cpplint
         run: pip install cpplint
-
-      - name: Конфигурация
-        run: make configure
 
       - name: Проверка форматирования (clang-format)
         run: make format-check
@@ -104,13 +93,16 @@ jobs:
   coverage:
     name: Покрытие
     runs-on: ubuntu-latest
+    env:
+      CC: gcc
+      CXX: g++
     steps:
       - uses: actions/checkout@v4
 
       - name: Установка зависимостей
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake g++
+          sudo apt-get install -y libgtest-dev g++ make
 
       - uses: actions/setup-python@v5
         with:
