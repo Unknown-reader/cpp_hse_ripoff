@@ -24,14 +24,7 @@ jobs:
       - name: Установка зависимостей
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtest-dev g++ make
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Установка gcovr
-        run: pip install gcovr
+          sudo apt-get install -y libgtest-dev g++ make gcovr
 
       - name: Сбор покрытия
         run: make coverage

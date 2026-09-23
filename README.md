@@ -10,23 +10,45 @@ Style.
 
 - Компилятор `g++` с поддержкой C++20 (в CI дополнительно проверяется `clang++`)
 - `make`
-- `libgtest-dev` — заголовки и библиотека GoogleTest
-- Инструменты качества (нужны только для `make lint` и `make format`):
-  `clang-format`, `clang-tidy`, `cppcheck`, `cpplint`
-- `gcovr` для `make coverage`
+- `libgtest-dev` — заголовки и статические библиотеки GoogleTest (нужен для
+  `make build`, `make test`, `make sanitize`, `make coverage`)
+- `clang-format`, `clang-tidy`, `cppcheck`, `cpplint` — инструменты качества
+  (нужны только для `make lint`, `make format` и `make format-check`)
+- `gcovr` — для `make coverage`
 
-Установка (Ubuntu/WSL):
+Все зависимости есть в штатных репозиториях Ubuntu/WSL (`cpplint` и `gcovr` — в
+`universe`), Python/pip не нужен. Установка на «чистой» системе:
 
 ```bash
-sudo apt-get install -y g++ libgtest-dev clang-format clang-tidy cppcheck
-pip install --user --break-system-packages cpplint gcovr
+sudo apt-get install -y make g++ libgtest-dev \
+  clang-format clang-tidy cppcheck cpplint gcovr
 ```
+
+## GoogleTest
+
+Все работы используют GoogleTest и берут его из системных пакетов
+(`libgtest-dev`), без копирования библиотек в репозиторий. GoogleTest
+подключается только при линковке тестового бинарника (`GTEST_LDLIBS` в
+`NN/Makefile`):
+
+```make
+GTEST_LDLIBS = -lgtest -lgtest_main -pthread
+```
+
+GoogleTest обязателен для `make build`, `make test`, `make sanitize` и
+`make coverage` — без него не соберется тестовый бинарник (`<gtest/gtest.h>` и
+библиотеки). Для `make lint` и `make format` gtest не нужен.
+
+Пример тестов на GoogleTest — `01/tests/test_solution.cpp`.
 
 ## Структура
 
 ```
 .
 ├── Makefile                # корневой: запускает цели по работам из списка HWS
+├── .clang-format           # профиль Google, 80 колонок, стандарт C++20
+├── .clang-tidy             # правила статического анализа
+├── .gitignore              # сборка, покрытие, кэши инструментов
 ├── 01/                     # пример готовой работы
 │   ├── Makefile            # самодостаточный Makefile работы
 │   ├── include/hw01/solution.hpp
@@ -35,16 +57,16 @@ pip install --user --break-system-packages cpplint gcovr
 └── .github/workflows/      # ci.yml, pages.yml
 ```
 
-Сборка — чистый `make` + `g++`, без CMake. GoogleTest линкуется из системы
-(`-lgtest -lgtest_main -pthread`). У каждой работы свой полный Makefile (файлы
-работ намеренно повторяются — работы независимы друг от друга).
+Сборка — чистый `make` + `g++`, без CMake. GoogleTest берется из системы из
+пакета `libgtest-dev` (см. раздел «GoogleTest»). У каждой работы свой полный
+Makefile (файлы работ намеренно повторяются — работы независимы друг от друга).
 
 ## Быстрый старт
 
 ```bash
 make help                 # список команд
 make test  HW=01          # собрать и прогнать тесты работы 01
-make build HW=01          # только собрать
+make build HW=01          # собрать работу, не запуская тесты
 ```
 
 Собрать и протестировать сразу все работы из `HWS`:
