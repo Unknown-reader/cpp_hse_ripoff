@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 # Корневой Makefile: запускает цели по всем работам из списка HWS.
-# Добавляя новую работу NN/, допишите её номер в HWS.
+# Добавляя новую работу NN/, допишите ее номер в HWS.
 
 HWS := 01
 HW ?=
@@ -32,11 +32,11 @@ help:
 	@echo "  make build   [HW=NN]      Собрать (все работы или одну)"
 	@echo "  make test    [HW=NN]      Собрать и прогнать тесты"
 	@echo "  make sanitize [HW=NN]     Тесты под ASan/UBSan"
-	@echo "  make coverage [HW=NN]     Тесты + отчёт о покрытии"
+	@echo "  make coverage [HW=NN]     Тесты + отчет о покрытии"
 	@echo "  make lint     [HW=NN]     cpplint + clang-tidy + cppcheck"
 	@echo "  make format              Отформатировать clang-format"
 	@echo "  make format-check        Проверить форматирование (как в CI)"
-	@echo "  make clean                Удалить каталоги сборки и отчёт покрытия"
+	@echo "  make clean                Удалить каталоги сборки и отчет покрытия"
 	@echo ""
 	@echo "Работы: $(HWS)"
 
@@ -65,7 +65,7 @@ lint:
 	@for d in $(DIRS); do \
 		$(MAKE) --no-print-directory -C $$d lint || exit 1; \
 	done
-	@echo "Линт завершён."
+	@echo "Линт завершен."
 
 format:
 	@$(CLANG_FORMAT) -i $(FORMAT_SOURCES)
@@ -80,4 +80,4 @@ clean:
 		$(MAKE) --no-print-directory -C $$d clean || exit 1; \
 	done
 	@rm -rf build build-asan build-cov $(COVERAGE_DIR)
-	@echo "Каталоги сборки и отчёт покрытия удалены."
+	@echo "Каталоги сборки и отчет покрытия удалены."

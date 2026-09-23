@@ -58,18 +58,18 @@ make test
 
 | Команда | Назначение |
 |---|---|
-| `make build [HW=NN]` | Собрать всё или только работу `NN` |
+| `make build [HW=NN]` | Собрать все или только работу `NN` |
 | `make test [HW=NN]` | Собрать и прогнать тесты |
 | `make sanitize [HW=NN]` | Сборка и тесты под ASan/UBSan |
-| `make coverage [HW=NN]` | Отчёт о покрытии (`coverage/index.html`) |
+| `make coverage [HW=NN]` | Отчет о покрытии (`coverage/index.html`) |
 | `make lint [HW=NN]` | cpplint + clang-tidy + cppcheck |
 | `make format` | Автоформатирование clang-format по всему репозиторию |
 | `make format-check` | Проверка форматирования (как в CI) |
-| `make clean` | Удалить каталоги сборки и отчёты покрытия |
+| `make clean` | Удалить каталоги сборки и отчеты покрытия |
 
 Результаты сборки складываются в `build/NN/`, санитайзеры — в
 `build-asan/NN/`, покрытие — в `build-cov/NN/` (все каталоги в `.gitignore`).
-Отчёт покрытия отдельной работы пишется в `NN/coverage/`, сводный отчёт по всем
+Отчет покрытия отдельной работы пишется в `NN/coverage/`, сводный отчет по всем
 работам — в корневой `coverage/`.
 
 Команды можно вызывать и напрямую из каталога работы:
@@ -83,7 +83,7 @@ make test
 
 1. Создайте каталог `NN/` (например, `02/`).
 2. Скопируйте `Makefile` из любой готовой работы (он самодостаточен, менять в
-   нём ничего не нужно):
+   нем ничего не нужно):
    ```bash
    mkdir -p 02 && cp 01/Makefile 02/
    mkdir -p 02/include/hw02 02/src 02/tests
@@ -106,7 +106,7 @@ make test
 
 Проверки выполняют три инструмента: `clang-format` (форматирование),
 `cpplint` (правила Google) и `clang-tidy` + `cppcheck` (статический анализ).
-Все они блокирующие — CI упадёт при нарушении.
+Все они блокирующие — CI упадет при нарушении.
 
 ## CI/CD
 
@@ -121,15 +121,15 @@ make test
 - `coverage` — покрытие через gcovr + gcov, сводка в Summary и артефакт
   `coverage/`.
 
-**`.github/workflows/pages.yml`** — по push в `main`: HTML-отчёт о покрытии
+**`.github/workflows/pages.yml`** — по push в `main`: HTML-отчет о покрытии
 публикуется на GitHub Pages.
 
 ### Разовая настройка репозитория
 
 - **Settings → Pages → Source = GitHub Actions** — иначе `pages.yml` не
-  задеплоит отчёт.
+  задеплоит отчет.
 - (Необязательно) **Settings → Branches** — защита `main` с обязательными
-  зелёными проверками CI.
+  зелеными проверками CI.
 
 ### Типичный рабочий цикл
 

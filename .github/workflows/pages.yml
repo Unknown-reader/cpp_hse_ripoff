@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build:
-    name: Сбор отчёта покрытия
+    name: Сбор отчета покрытия
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
