@@ -14,7 +14,7 @@ Checks: >
   -readability-magic-numbers,
   -readability-function-cognitive-complexity
 WarningsAsErrors: '*'
-HeaderFilterRegex: '/(include|src|tests)/.*\.(hpp|h|cc|cpp)$'
+HeaderFilterRegex: '.*/[0-9][0-9]/(include|src|tests)/.*\.(hpp|h|cc|cpp)$'
 FormatStyle: file
 CheckOptions:
   - key: readability-identifier-naming.NamespaceCase
