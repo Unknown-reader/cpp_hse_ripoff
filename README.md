@@ -8,16 +8,16 @@ Makefile поверх CMake, тесты на GoogleTest, стиль — Google C
 ## Требования
 
 - CMake ≥ 3.20
-- Компилятор `clang++` с поддержкой C++20 (≥ 16)
+- Компилятор `g++` с поддержкой C++20 (в CI дополнительно проверяется `clang++`)
 - `make`
 - Инструменты качества (нужны только для `make lint` и `make format`):
   `clang-format`, `clang-tidy`, `run-clang-tidy`, `cppcheck`, `cpplint`
-- `gcovr` и `llvm-cov` для `make coverage`
+- `gcovr` для `make coverage`
 
 Установка (Ubuntu/WSL):
 
 ```bash
-sudo apt-get install -y cmake clang llvm clang-format clang-tidy cppcheck
+sudo apt-get install -y cmake g++ clang-format clang-tidy cppcheck
 pip install --user --break-system-packages cpplint gcovr
 ```
 
@@ -112,10 +112,10 @@ make test
 **`.github/workflows/ci.yml`** — на каждый `push` и `pull_request` в `main`,
 а также вручную (`workflow_dispatch`):
 
-- `build-and-test` — сборка и тесты с `-Werror`;
+- `build-and-test` — матрица `{gcc, clang}` с `-Werror`;
 - `sanitizers` — сборка и тесты под AddressSanitizer и UBSan;
 - `quality` — `clang-format --dry-run --Werror`, cpplint, clang-tidy, cppcheck;
-- `coverage` — покрытие через gcovr + llvm-cov, сводка в Summary и артефакт
+- `coverage` — покрытие через gcovr + gcov, сводка в Summary и артефакт
   `coverage/`.
 
 **`.github/workflows/pages.yml`** — по push в `main`: HTML-отчёт о покрытии
