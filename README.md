@@ -1,7 +1,8 @@
 # cpp_hse_ripoff
 
-Домашние работы по C++. Каждая работа — отдельный каталог `NN/`, сборка через
-Make, тесты на GoogleTest (из apt), стиль — Google C++ Style.
+Домашние работы по C++. Каждая работа — отдельный каталог `NN/` со своим
+Makefile, сборка через Make, тесты на GoogleTest (из apt), стиль — Google C++
+Style.
 
 [![CI](https://github.com/Unknown-reader/cpp_hse_ripoff/actions/workflows/ci.yml/badge.svg)](https://github.com/Unknown-reader/cpp_hse_ripoff/actions/workflows/ci.yml)
 
@@ -25,12 +26,9 @@ pip install --user --break-system-packages cpplint gcovr
 
 ```
 .
-├── Makefile                # корневой: команды по всем работам или одной
-├── common.mk               # общая логика сборки одной работы
-├── template/               # каркас новой работы (include/, src/, tests/, Makefile)
-├── scripts/new_hw.sh       # генератор каркаса
+├── Makefile                # корневой: запускает цели по работам из списка HWS
 ├── 01/                     # пример готовой работы
-│   ├── Makefile            # include ../common.mk
+│   ├── Makefile            # самодостаточный Makefile работы
 │   ├── include/hw01/solution.hpp
 │   ├── src/solution.cpp
 │   └── tests/test_solution.cpp
@@ -38,19 +36,18 @@ pip install --user --break-system-packages cpplint gcovr
 ```
 
 Сборка — чистый `make` + `g++`, без CMake. GoogleTest линкуется из системы
-(`-lgtest -lgtest_main -pthread`).
+(`-lgtest -lgtest_main -pthread`). У каждой работы свой полный Makefile (файлы
+работ намеренно повторяются — работы независимы друг от друга).
 
 ## Быстрый старт
 
 ```bash
 make help                 # список команд
-make new HW=02            # создать каркас работы 02
-# реализовать 02/src/... и тесты 02/tests/...
-make build HW=02          # собрать только работу 02
-make test  HW=02          # прогнать только её тесты
+make test  HW=01          # собрать и прогнать тесты работы 01
+make build HW=01          # только собрать
 ```
 
-Собрать и протестировать сразу все работы:
+Собрать и протестировать сразу все работы из `HWS`:
 
 ```bash
 make build
@@ -67,26 +64,36 @@ make test
 | `make coverage [HW=NN]` | Отчёт о покрытии (`coverage/index.html`) |
 | `make lint [HW=NN]` | cpplint + clang-tidy + cppcheck |
 | `make lint-style [HW=NN]` | Только cpplint (Google C++ Style) |
-| `make format [HW=NN]` | Автоформатирование clang-format |
-| `make format-check [HW=NN]` | Проверка форматирования (как в CI) |
-| `make new HW=NN` | Создать каркас новой работы |
-| `make clean` | Удалить каталоги сборки и отчёт покрытия |
+| `make format` | Автоформатирование clang-format по всему репозиторию |
+| `make format-check` | Проверка форматирования (как в CI) |
+| `make clean` | Удалить каталоги сборки и отчёты покрытия |
 
 Результаты сборки складываются в `build/NN/`, санитайзеры — в
 `build-asan/NN/`, покрытие — в `build-cov/NN/` (все каталоги в `.gitignore`).
+Отчёт покрытия отдельной работы пишется в `NN/coverage/`, сводный отчёт по всем
+работам — в корневой `coverage/`.
+
+Команды можно вызывать и напрямую из каталога работы:
+
+```bash
+cd 01
+make test
+```
 
 ## Как добавить работу
 
-1. `make new HW=07` — создастся `07/` с заголовком, исходником, тестом и
-   `Makefile` (одна строка: `include ../common.mk`).
-2. Реализуйте задание в `07/src/`, объявления — в
-   `07/include/hw07/solution.hpp`.
-3. Добавьте тесты в `07/tests/`.
-4. Проверьте локально: `make test HW=07`, `make lint HW=07`,
-   `make sanitize HW=07`.
-
-Новые каталоги `NN/` подхватываются автоматически — корневой `Makefile` сам
-находит работы.
+1. Создайте каталог `NN/` (например, `02/`).
+2. Скопируйте `Makefile` из любой готовой работы (он самодостаточен, менять в
+   нём ничего не нужно):
+   ```bash
+   mkdir -p 02 && cp 01/Makefile 02/
+   mkdir -p 02/include/hw02 02/src 02/tests
+   ```
+3. Добавьте заголовок, исходник и тест по образцу `01/`.
+4. **Допишите номер в `HWS`** в корневом `Makefile` (например, `HWS := 01 02`),
+   чтобы корневые команды видели работу.
+5. Проверьте локально: `make test HW=02`, `make lint HW=02`,
+   `make sanitize HW=02`.
 
 ## Стиль кода
 
@@ -129,8 +136,8 @@ make test
 
 ```bash
 git switch -c hw07
-make new HW=07
-# ... пишем код и тесты ...
+mkdir -p 07 && cp 01/Makefile 07/ && mkdir -p 07/include/hw07 07/src 07/tests
+# ... пишем код и тесты, дописываем 07 в HWS ...
 make format && make lint HW=07 && make sanitize HW=07 && make coverage HW=07
 git add -A && git commit -m "hw07: ..." && git push -u origin hw07
 gh pr create --fill          # CI станет обязательной проверкой
