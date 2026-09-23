@@ -3,16 +3,14 @@ SHELL := /bin/bash
 CMAKE ?= cmake
 CTEST ?= ctest
 ifeq ($(origin CC),default)
-override CC := clang
+override CC := gcc
 endif
 ifeq ($(origin CXX),default)
-override CXX := clang++
+override CXX := g++
 endif
 CLANG_FORMAT ?= clang-format
 CPPLINT ?= cpplint
 GCOVR ?= gcovr
-LLVM_COV ?= $(shell command -v llvm-cov || command -v llvm-cov-18 \
-	|| command -v llvm-cov-19 || echo llvm-cov)
 JOBS ?= $(shell nproc 2>/dev/null || echo 2)
 
 BUILD_DIR ?= build
@@ -97,7 +95,6 @@ coverage:
 	@$(CTEST) --test-dir $(BUILD_COV_DIR) $(HW_FILTER) --output-on-failure
 	@mkdir -p $(COVERAGE_DIR)
 	@$(GCOVR) --root . --gcov-object-directory $(BUILD_COV_DIR) \
-		--gcov-executable "$(LLVM_COV) gcov" \
 		$(if $(HW),--filter '$(HW)/.*',) \
 		--exclude '(^|/)build[^/]*/.*' \
 		--exclude '.*/(_deps|tests|third_party)/.*' \
