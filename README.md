@@ -1,45 +1,44 @@
 # cpp_hse_ripoff
 
 Домашние работы по C++. Каждая работа — отдельный каталог `NN/`, сборка через
-Makefile поверх CMake, тесты на GoogleTest, стиль — Google C++ Style.
+Make, тесты на GoogleTest (из apt), стиль — Google C++ Style.
 
 [![CI](https://github.com/Unknown-reader/cpp_hse_ripoff/actions/workflows/ci.yml/badge.svg)](https://github.com/Unknown-reader/cpp_hse_ripoff/actions/workflows/ci.yml)
 
 ## Требования
 
-- CMake ≥ 3.20
 - Компилятор `g++` с поддержкой C++20 (в CI дополнительно проверяется `clang++`)
 - `make`
+- `libgtest-dev` — заголовки и библиотека GoogleTest
 - Инструменты качества (нужны только для `make lint` и `make format`):
-  `clang-format`, `clang-tidy`, `run-clang-tidy`, `cppcheck`, `cpplint`
+  `clang-format`, `clang-tidy`, `cppcheck`, `cpplint`
 - `gcovr` для `make coverage`
 
 Установка (Ubuntu/WSL):
 
 ```bash
-sudo apt-get install -y cmake g++ clang-format clang-tidy cppcheck
+sudo apt-get install -y g++ libgtest-dev clang-format clang-tidy cppcheck
 pip install --user --break-system-packages cpplint gcovr
 ```
-
-GoogleTest не нужно ставить руками — CMake скачает его автоматически
-(FetchContent, тег `v1.17.0`) при первой конфигурации.
 
 ## Структура
 
 ```
 .
-├── CMakeLists.txt          # корневой проект: C++20, авто-поиск работ NN/
-├── cmake/                  # общие флаги и опции (sanitizers/coverage/Werror)
-├── Makefile                # единая точка входа
-├── template/               # каркас новой работы
+├── Makefile                # корневой: команды по всем работам или одной
+├── common.mk               # общая логика сборки одной работы
+├── template/               # каркас новой работы (include/, src/, tests/, Makefile)
 ├── scripts/new_hw.sh       # генератор каркаса
 ├── 01/                     # пример готовой работы
-│   ├── CMakeLists.txt
+│   ├── Makefile            # include ../common.mk
 │   ├── include/hw01/solution.hpp
 │   ├── src/solution.cpp
 │   └── tests/test_solution.cpp
 └── .github/workflows/      # ci.yml, pages.yml
 ```
+
+Сборка — чистый `make` + `g++`, без CMake. GoogleTest линкуется из системы
+(`-lgtest -lgtest_main -pthread`).
 
 ## Быстрый старт
 
@@ -62,7 +61,6 @@ make test
 
 | Команда | Назначение |
 |---|---|
-| `make configure` | Настроить CMake (скачивает GoogleTest) |
 | `make build [HW=NN]` | Собрать всё или только работу `NN` |
 | `make test [HW=NN]` | Собрать и прогнать тесты |
 | `make sanitize [HW=NN]` | Сборка и тесты под ASan/UBSan |
@@ -74,22 +72,21 @@ make test
 | `make new HW=NN` | Создать каркас новой работы |
 | `make clean` | Удалить каталоги сборки и отчёт покрытия |
 
-Полезные переменные: `JOBS`, `BUILD_DIR`, `CMAKE_FLAGS`.
-
-По умолчанию сборка идёт в каталог `build/` рядом с исходниками (он исключён
-через `.gitignore`).
+Результаты сборки складываются в `build/NN/`, санитайзеры — в
+`build-asan/NN/`, покрытие — в `build-cov/NN/` (все каталоги в `.gitignore`).
 
 ## Как добавить работу
 
-1. `make new HW=07` — создастся `07/` с заголовком, исходником и тестом.
+1. `make new HW=07` — создастся `07/` с заголовком, исходником, тестом и
+   `Makefile` (одна строка: `include ../common.mk`).
 2. Реализуйте задание в `07/src/`, объявления — в
    `07/include/hw07/solution.hpp`.
 3. Добавьте тесты в `07/tests/`.
 4. Проверьте локально: `make test HW=07`, `make lint HW=07`,
    `make sanitize HW=07`.
 
-Новые каталоги `NN/` подхватываются автоматически при следующей конфигурации
-(каталог-обёртка не требует правок).
+Новые каталоги `NN/` подхватываются автоматически — корневой `Makefile` сам
+находит работы.
 
 ## Стиль кода
 
