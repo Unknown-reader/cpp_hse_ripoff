@@ -1,5 +1,3 @@
-SHELL := /bin/bash
-
 # Makefile одной домашней работы NN/.
 # Самодостаточный: при создании новой работы скопируйте этот файл в ее каталог.
 
@@ -7,24 +5,15 @@ NAME := $(notdir $(CURDIR))
 ROOT := $(abspath ..)
 
 CXX ?= g++
-AR ?= ar
-GCOVR ?= gcovr
 
 CPPFLAGS += -Iinclude
 CXXFLAGS ?= -std=c++20 -Wall -Wextra -Wpedantic -Wshadow \
 	-Wconversion -Wsign-conversion -g
 GTEST_LDLIBS ?= -lgtest -lgtest_main -pthread
 
+# -Werror включает CI через переменную окружения WERROR=1.
 ifeq ($(WERROR),1)
   CXXFLAGS += -Werror
-endif
-ifeq ($(SAN),1)
-  CXXFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer
-  LDFLAGS += -fsanitize=address,undefined
-endif
-ifeq ($(COV),1)
-  CXXFLAGS += --coverage -O0
-  LDFLAGS += --coverage
 endif
 
 BUILD_DIR ?= $(ROOT)/build/$(NAME)
@@ -39,11 +28,7 @@ TEST_OBJS := $(patsubst tests/%.cpp,$(BUILD_DIR)/tests/%.o,$(TEST_SRCS))
 LIB := $(BUILD_DIR)/libhw$(NAME).a
 TEST_BIN := $(BUILD_DIR)/hw$(NAME)_tests
 
-ifeq ($(strip $(TEST_SRCS)),)
-  ALL_TARGETS := $(LIB)
-else
-  ALL_TARGETS := $(LIB) $(TEST_BIN)
-endif
+ALL_TARGETS := $(LIB) $(if $(TEST_SRCS),$(TEST_BIN))
 
 .DEFAULT_GOAL := build
 
@@ -53,7 +38,7 @@ build: $(ALL_TARGETS)
 
 $(LIB): $(LIB_OBJS)
 	@mkdir -p $(dir $@)
-	$(AR) rcs $@ $^
+	ar rcs $@ $^
 
 $(TEST_BIN): $(TEST_OBJS) $(LIB)
 	@mkdir -p $(dir $@)
@@ -68,18 +53,20 @@ $(BUILD_DIR)/%.o: %.cpp
 test: $(TEST_BIN)
 	$(TEST_BIN)
 
+# sanitize/coverage собирают вариант тестовой цели test в свой каталог,
+# явно передавая флаги компиляции и компоновки.
 sanitize:
-	@$(MAKE) --no-print-directory SAN=1 BUILD_DIR=$(ASAN_BUILD_DIR) \
-		$(ASAN_BUILD_DIR)/hw$(NAME)_tests
 	@ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=print_stacktrace=1 \
-		$(ASAN_BUILD_DIR)/hw$(NAME)_tests
+		$(MAKE) --no-print-directory BUILD_DIR=$(ASAN_BUILD_DIR) \
+		CXXFLAGS="$(CXXFLAGS) -fsanitize=address,undefined -fno-omit-frame-pointer" \
+		LDFLAGS="-fsanitize=address,undefined" test
 
 coverage:
-	@$(MAKE) --no-print-directory COV=1 BUILD_DIR=$(COV_BUILD_DIR) \
-		$(COV_BUILD_DIR)/hw$(NAME)_tests
-	@$(COV_BUILD_DIR)/hw$(NAME)_tests
+	@$(MAKE) --no-print-directory BUILD_DIR=$(COV_BUILD_DIR) \
+		CXXFLAGS="$(CXXFLAGS) --coverage -O0" \
+		LDFLAGS="--coverage" test
 	@mkdir -p $(COVERAGE_DIR)
-	@$(GCOVR) --root $(ROOT) --gcov-object-directory $(COV_BUILD_DIR) \
+	@gcovr --root $(ROOT) --gcov-object-directory $(COV_BUILD_DIR) \
 		--filter '$(NAME)/.*' \
 		--exclude '.*/(tests|third_party)/.*' \
 		--exclude-unreachable-branches --exclude-throw-branches \
@@ -100,8 +87,7 @@ lint:
 		-Iinclude src include
 
 clean:
-	@rm -rf $(ROOT)/build/$(NAME) $(ROOT)/build-asan/$(NAME) \
-		$(ROOT)/build-cov/$(NAME) $(COVERAGE_DIR)
+	@rm -rf $(BUILD_DIR) $(ASAN_BUILD_DIR) $(COV_BUILD_DIR) $(COVERAGE_DIR)
 
 help:
 	@echo "Работа $(NAME):"
