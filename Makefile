@@ -1,11 +1,13 @@
 SHELL := /bin/bash
 
-ROOT := $(CURDIR)
-HW_DIRS := $(sort $(notdir $(wildcard [0-9][0-9])))
+# Корневой Makefile: запускает цели по всем работам из списка HWS.
+# Добавляя новую работу NN/, допишите её номер в HWS.
+
+HWS := 01
 HW ?=
 
 ifeq ($(HW),)
-  DIRS := $(HW_DIRS)
+  DIRS := $(HWS)
 else
   DIRS := $(HW)
 endif
@@ -22,7 +24,7 @@ FORMAT_SOURCES := $(shell find . -type d \
 .DEFAULT_GOAL := help
 
 .PHONY: help build test sanitize coverage lint lint-style lint-tidy \
-	lint-cppcheck format format-check new clean
+	lint-cppcheck format format-check clean
 
 help:
 	@echo "Домашние работы (укажите HW=NN, чтобы работать с одной):"
@@ -33,12 +35,11 @@ help:
 	@echo "  make coverage [HW=NN]     Тесты + отчёт о покрытии"
 	@echo "  make lint     [HW=NN]     cpplint + clang-tidy + cppcheck"
 	@echo "  make lint-style [HW=NN]   Только cpplint (Google C++ Style)"
-	@echo "  make format   [HW=NN]     Отформатировать clang-format"
-	@echo "  make format-check [HW=NN] Проверить форматирование (как в CI)"
-	@echo "  make new       HW=NN      Создать каркас новой работы"
+	@echo "  make format              Отформатировать clang-format"
+	@echo "  make format-check        Проверить форматирование (как в CI)"
 	@echo "  make clean                Удалить каталоги сборки и отчёт покрытия"
 	@echo ""
-	@echo "Обнаруженные работы: $(if $(HW_DIRS),$(HW_DIRS),нет)"
+	@echo "Работы: $(HWS)"
 
 build test sanitize lint-style lint-tidy lint-cppcheck:
 	@for d in $(DIRS); do \
@@ -59,7 +60,7 @@ coverage:
 		--html-details $(COVERAGE_DIR)/index.html \
 		--txt $(COVERAGE_DIR)/coverage.txt
 	@cat $(COVERAGE_DIR)/coverage.txt
-	@echo "Покрытие: $(COVERAGE_DIR)/index.html и $(COVERAGE_DIR)/coverage.xml"
+	@echo "Сводное покрытие: $(COVERAGE_DIR)/index.html"
 
 lint: lint-style lint-tidy lint-cppcheck
 
@@ -71,10 +72,9 @@ format-check:
 	@$(CLANG_FORMAT) --dry-run --Werror $(FORMAT_SOURCES)
 	@echo "Форматирование соответствует .clang-format."
 
-new:
-	@test -n "$(HW)" || { echo "Использование: make new HW=09"; exit 1; }
-	@bash scripts/new_hw.sh $(HW)
-
 clean:
+	@for d in $(HWS); do \
+		$(MAKE) --no-print-directory -C $$d clean || exit 1; \
+	done
 	@rm -rf build build-asan build-cov $(COVERAGE_DIR)
 	@echo "Каталоги сборки и отчёт покрытия удалены."
