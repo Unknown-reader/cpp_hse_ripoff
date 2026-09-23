@@ -96,7 +96,8 @@ lint:
 	done
 	@cppcheck --enable=all --inconclusive --error-exitcode=1 --std=c++20 \
 		--suppress=missingIncludeSystem --suppress=unusedFunction \
-		--suppress=unmatchedSuppression -Iinclude src include
+		--suppress=unmatchedSuppression --suppress=checkersReport \
+		-Iinclude src include
 
 clean:
 	@rm -rf $(ROOT)/build/$(NAME) $(ROOT)/build-asan/$(NAME) \
